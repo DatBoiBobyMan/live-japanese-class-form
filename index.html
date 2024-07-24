@@ -116,6 +116,18 @@
         cursor:pointer;
     }
 
+    .not-valid{
+      border:0.5em solid red;
+      background-color:#F59592;
+    }
+
+    .validator{
+      display: block;
+      color:darkred;
+      font-size:0.8em;
+      letter-spacing: 0.2em;
+    }
+
     .loadingMessage{
       color:rgba(107,0,0,1);
     }
@@ -200,10 +212,13 @@
                     <section class="message message-box" id="submissionMessage">
                         <h3 id="submissionMessageText"></h3>
                         <h1>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
-                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
-                        </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                          </svg>
                         </h1>
+                        <button class="button" type="submit" value="Submit" onclick="makeNewSubmission()">
+                          Make New Submission
+                        </button>
                     </section>
                     <form id="submissionForm" class="form">
                         <div class="logo">
@@ -211,17 +226,17 @@
                         <div class="field-group">
                         <label for="fname">Name</label>
                             <input class="text-input" type="text" id="name"/>
-                            <span id="nameValidator" class="validator"></span>
+                            <div id="nameValidator" class="validator"></div>
                         </div>
                         <div class="field-group">
                         <label for="lname">Email Address</label>
-                        <input class="text-input" type="text" id="emailAddress"/>
-                        <span id="emailAddressValidator" class="validator"></span>
+                          <input class="text-input" type="text" id="emailAddress"/>
+                          <div id="emailAddressValidator" class="validator"></div>
                         </div>
                         <div class="field-group">
                         <label for="lname">Phone</label>
-                        <input class="text-input" type="text" id="phoneNumber"/>
-                        <span id="phoneNumberValidator" class="validator"></span>
+                          <input class="text-input" type="text" id="phoneNumber"/>
+                          <div id="phoneNumberValidator" class="validator"></div>
                         </div>
                         <div class="field-group button-group">
                         <button class="button" type="submit" value="Submit">
@@ -240,11 +255,38 @@
       phoneNumber:"",
     };
     
-    var FORM_VALIDATOR = function(itemsToLoopThrough){return(
-        oneFieldIsFilledOut(itemsToLoopThrough[0].value) && 
-        oneOrAnotherFieldIsFilledOut(itemsToLoopThrough[1].value, itemsToLoopThrough[2].value) &&
-        phoneNumberIsCorrect(itemsToLoopThrough[2].value)
-    )};
+    var FORM_VALIDATOR = function(){
+      var allFieldsFilledOut = [
+        {
+          fieldName:"name",
+          message:"Field is required",
+          rules:[
+            function(field){return oneFieldIsFilledOut(field)},
+          ]          
+        },
+        {
+          fieldName:"emailAddress",
+          message:"Either this field or phone number is required",
+          rules:[
+            function(field){
+              return oneOrAnotherFieldIsFilledOut(dataFieldsToSubmit.emailAddress, dataFieldsToSubmit.phoneNumber)
+            }
+          ]
+        },
+        {
+          fieldName:"phoneNumber",
+          message:"Either email or this Field is required, and must be in xxx-xxx-xxxx format",
+          rules:[
+            function(field){return phoneNumberIsCorrect(field)},
+            function(field){
+              return oneOrAnotherFieldIsFilledOut(dataFieldsToSubmit.emailAddress, dataFieldsToSubmit.phoneNumber);
+            }
+          ]
+        },
+      ];
+      
+      return allFieldsFilledOut;
+  };
 
     window.addEventListener("load",function(){
       setupForm();
@@ -281,6 +323,8 @@
     }
 
     function sendData(){
+      clearFormValidations();
+
       var loadingMessage = document.getElementById("loadingMessage");
       var loadingMessageText = document.getElementById("loadingMessageText");
       var form = document.getElementById("submissionForm");
@@ -291,10 +335,13 @@
       loadingMessageText.innerText = "Sending Your Data";
       form.style.display = "none";
 
+<<<<<<< HEAD
       var url = "https://script.google.com/macros/s/AKfycbynm1FtIj7nhB3hwYQninYJBWnkPSwgzT0OP704lc11oVQD1Jqw1KmjrSG3fKf_EslMYA/exec";
+=======
+      var url = "https://script.google.com/macros/s/AKfycbxqKCrAfzKDH9iU-P2FqkMZu1wpVGuPt6KpUr8ViA6WWT-H6VLzSSio8W2kk4V4PhH_dw/exec";
+>>>>>>> c0861cb17f569bb7c87a2f7b0a990dcd8518ee07
 
       try{
-        console.log(queryParams);
         if(new URLSearchParams(dataFieldsToSubmit).size > 0){
           fetch(url,{
             redirect: "follow",
@@ -306,6 +353,7 @@
             },
           }).then(function() {
             handleFormSumission();
+            
           }).catch(function(){
             cancelSubmission();
           });
@@ -333,14 +381,84 @@
     }
 
     function clearFormValidations(){
-      
+      var nameField = document.getElementById("name");
+      var emailAddressField = document.getElementById("emailAddress");
+      var phoneNumberField = document.getElementById("phoneNumber");
+
+      if(nameField.classList.contains("not-valid")) nameField.classList.remove("not-valid");
+      if(emailAddressField.classList.contains("not-valid")) emailAddressField.classList.remove("not-valid");
+      if(phoneNumberField.classList.contains("not-valid")) phoneNumberField.classList.remove("not-valid");
     }
 
     document.getElementById("submissionForm").addEventListener("submit", submitForm);
+    document.getElementById("name").addEventListener("click", clearFieldValidationOnClick);
+    document.getElementById("emailAddress").addEventListener("click", clearFieldValidationOnClick);
+    document.getElementById("phoneNumber").addEventListener("click", clearFieldValidationOnClick);
+
+    function clearFieldValidationOnClick(e){
+      var currentField = document.getElementById(e.target.id);
+      currentField.classList.remove("not-valid");
+    }
 
     function validateForm(){
-      var itemsToLoopThrough = [...document.getElementsByClassName("text-input")];
-      return FORM_VALIDATOR(itemsToLoopThrough);
+      var allFieldsToValidate = FORM_VALIDATOR();
+      var fieldsValidated = 0;
+      var allAvailableFields = [...document.getElementsByClassName("text-input")].length;
+
+      allFieldsToValidate.forEach(function(item){
+        var itemElement = document.getElementById(item.fieldName);
+        var itemInputValidator = document.getElementById(item.fieldName+"Validator");
+        
+        for(var i = 0; i <= item.rules.length-1; i++){
+
+          if(item.rules[i](dataFieldsToSubmit[item.fieldName]) === false){
+            itemElement.classList.add("not-valid");
+            itemInputValidator.innerText = item.message;
+            itemInputValidator.style.display = "block";
+            break;
+          }
+
+          if(i+1 === item.rules.length){
+            fieldsValidated++;
+          }
+
+        }
+      });
+
+      console.log(fieldsValidated);
+
+      var formIsValid = fieldsValidated === allAvailableFields;
+
+      return formIsValid;
+    }
+
+    function makeNewSubmission(){
+      var form = document.getElementById("submissionForm");
+      var submissionMessage = document.getElementById("submissionMessage");
+      var nameField = document.getElementById("name");
+      var emailAddressField = document.getElementById("emailAddress");
+      var phoneNumberField = document.getElementById("phoneNumber");
+      var nameFieldValidator = document.getElementById("nameValidator");
+      var emailAddressFieldValidator = document.getElementById("emailAddressValidator");
+      var phoneNumberFieldValidator = document.getElementById("phoneNumberValidator");
+
+      dataFieldsToSubmit = {
+        name:"",
+        emailAddress:"",
+        phoneNumber:"",
+      };
+
+      nameFieldValidator.display = "none";
+      emailAddressFieldValidator.display = "none";
+      phoneNumberFieldValidator.display = "none";
+      nameFieldValidator.innerText="";
+      emailAddressFieldValidator.innerText="";
+      phoneNumberFieldValidator.innerText="";
+      nameField.value = "";
+      emailAddressField.value="";
+      phoneNumberField.value="";
+      submissionMessage.style.display = "none";
+      form.style.display = "flex";
     }
 
    function oneOrAnotherFieldIsFilledOut(field1,field2){
@@ -354,7 +472,8 @@
 
     function phoneNumberIsCorrect(phoneNumber){
         const regex = /^([0-9][0-9][0-9])-([0-9][0-9][0-9])-([0-9][0-9][0-9][0-9])/g;
-        return regex.test(phoneNumber);
+        console.log(phoneNumber);
+        return phoneNumber !== "" ? regex.test(phoneNumber) : true;
     }
 
     function oneFieldIsFilledOut(field){
@@ -364,8 +483,6 @@
         return condition;
     };
 
-
-    
     function handleFormSumission(){
       var loadingMessage = document.getElementById("loadingMessage");
       var loadingMessageText = document.getElementById("loadingMessageText");
@@ -376,7 +493,6 @@
       loadingMessageText.innerText = "";
       submissionMessage.style.display = "flex";
       submissionMessageText.innerText = "Your data has been submitted!";
-
     }
 </script>
 </body>

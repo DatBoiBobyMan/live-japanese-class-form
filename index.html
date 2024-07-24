@@ -242,7 +242,8 @@
     
     var FORM_VALIDATOR = function(itemsToLoopThrough){return(
         oneFieldIsFilledOut(itemsToLoopThrough[0].value) && 
-        oneOrAnotherFieldIsFilledOut(itemsToLoopThrough[1].value, itemsToLoopThrough[2].value)
+        oneOrAnotherFieldIsFilledOut(itemsToLoopThrough[1].value, itemsToLoopThrough[2].value) &&
+        phoneNumberIsCorrect(itemsToLoopThrough[2].value)
     )};
 
     window.addEventListener("load",function(){
@@ -351,12 +352,19 @@
         return condition;
     };
 
+    function phoneNumberIsCorrect(phoneNumber){
+        const regex = /^([0-9][0-9][0-9])-([0-9][0-9][0-9])-([0-9][0-9][0-9][0-9])/g;
+        return regex.test(phoneNumber);
+    }
+
     function oneFieldIsFilledOut(field){
         var condition = (
             field !== undefined && field !== "" && field !== null
         );
         return condition;
     };
+
+
     
     function handleFormSumission(){
       var loadingMessage = document.getElementById("loadingMessage");
